@@ -1,0 +1,28 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: gdu_jpa_mysql
+    restart: unless-stopped
+    environment:
+      # Trùng khớp với application.properties (root / Dao666999)
+      MYSQL_ROOT_PASSWORD: Dao666999
+      MYSQL_DATABASE: gdu_jpa_lab
+    ports:
+      # host:container -> ứng dụng vẫn kết nối localhost:3306 như cũ
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      # Lưu dữ liệu ra volume để không mất khi tắt container
+      - mysql_data:/var/lib/mysql
+      # Script khởi tạo, tự chạy lần đầu khi container được tạo mới
+      - ./sql/create_database.sql:/docker-entrypoint-initdb.d/01-create_database.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pDao666999"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
